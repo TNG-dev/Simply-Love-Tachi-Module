@@ -82,15 +82,6 @@ t["ScreenEvaluationStage"] = Def.ActorFrame {
 				miss = counts.Miss
 			}
 
-			local survivedPercent = 100 * songPos:GetMusicSeconds() / song:GetLastSecond()
-
-			-- Clamp survived percent between 0 and 100.
-			if survivedPercent > 100 then
-				survivedPercent = 100
-			elseif survivedPercent < 0 then
-				survivedPercent = 0
-			end
-
 			local scorePercent = pss:GetPercentDancePoints() * 100.0
 
 			if scorePercent > 100 then
@@ -139,6 +130,31 @@ t["ScreenEvaluationStage"] = Def.ActorFrame {
 			local pn = ToEnumShortString(player)
 			local chartHash = SL[pn].Streams.Hash
 
+			local lifebarHistory = pss:GetLifeRecord(song:GetLastSecond())
+
+			local survivedPercent = 0;
+
+			for val in ivalues(lifebarHistory) do
+				if val > 0 then
+					survivedPercent = survivedPercent + 1
+				else
+					break
+				end
+			end
+
+			local scaledLifebar = {}
+			for key, val in ipairs(lifebarHistory) do
+				local newVal = val * 100
+
+				if newVal < 0 then
+					newVal = 0
+				elseif newVal > 100 then
+					newVal = 100
+				end
+				
+				scaledLifebar[key] =  newVal
+			end
+
 			local tachiScore = {
 				scorePercent = scorePercent,
 				survivedPercent = survivedPercent,
@@ -146,13 +162,16 @@ t["ScreenEvaluationStage"] = Def.ActorFrame {
 				judgements = judgements,
 				matchType = "itgChartHash",
 				identifier = chartHash,
+				optional = {
+					lifebarHistory = scaledLifebar
+				}
 			}
 
 			local batchManual = {
 				meta = {
 					game = "itg",
 					playtype = "Stamina",
-					service = ProductID() .. " v" .. ProductVersion() .. " (tsl v0.1.0)",
+					service = ProductID() .. " v" .. ProductVersion() .. " (tsl v0.1.1)",
 				},
 				-- array with one score
 				scores = { tachiScore }
@@ -178,8 +197,11 @@ t["ScreenEvaluationStage"] = Def.ActorFrame {
 						-- the score happened instead.
 						["X-Infer-Score-TimeAchieved"] = "true"
 					},
-					-- onResponse = function(response)
-					-- end,
+					onResponse = function(response)
+						if response.errorMessage then
+							SM("Failed to submit to Tachi: " .. response.errorMessage)
+						end
+					end,
 				}
 			end
 		end
