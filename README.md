@@ -8,7 +8,7 @@ At the moment, it only does the bare minimum: Listens for when you get a score a
 
 ## Usage
 
-Download [Tachi.lua] and place it inside `Themes/Simply Love/Modules`.
+Download [Tachi.lua](https://raw.githubusercontent.com/TNG-dev/Simply-Love-Tachi-Module/master/Tachi.lua) and place it inside `Themes/Simply Love/Modules`.
 
 If you're using this with [Bokutachi](https://bokutachi.xyz), use `Import Scores > ITG > ITG Hook` to get your configuration file.
 
