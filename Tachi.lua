@@ -1,5 +1,7 @@
 local t = {}
 
+local TACHI_VER = "0.1.3"
+
 -- Code shamelessly stolen from ParseGrooveStatsIni. Sorry!
 function GetTachiConfig(player)
 	local profile_slot = {
@@ -40,6 +42,12 @@ function GetTachiConfig(player)
 	return json
 end
 
+t["ScreenTitleMenu"] = Def.ActorFrame {
+	ModuleCommand= function(self)
+		SM("Tachi.lua loaded OK!")
+	end
+}
+
 -- When we get to the score screen, fire the score off to Tachi
 -- This is ugly, has no retry code, and is generally lazy. Maybe
 -- this can be integrated better in the future. For now, this is
@@ -47,6 +55,11 @@ end
 t["ScreenEvaluationStage"] = Def.ActorFrame {
 	ModuleCommand= function(self)
 		if GAMESTATE:IsCourseMode() then return end
+		
+		if SL.Global.GameMode ~= "ITG" then
+			-- we only support itg mode
+			return
+		end
 
 		local Players = GAMESTATE:GetHumanPlayers()
 
@@ -173,11 +186,24 @@ t["ScreenEvaluationStage"] = Def.ActorFrame {
 				}
 			}
 
+			local tachiVer = " (tsl " .. TACHI_VER .. ")"
+
+			local service = ProductID() .. " v" .. ProductVersion()
+
+			local maxProdSize = 60 - #tachiVer
+
+			-- if this string is too long, truncate it.
+			if #service > maxProdSize then
+				service = service:sub(0, maxProdSize -3 ) .. "..."
+			end
+
+			service = service .. tachiVer
+
 			local batchManual = {
 				meta = {
 					game = "itg",
 					playtype = "Stamina",
-					service = ProductID() .. " v" .. ProductVersion() .. " (tsl v0.1.2)",
+					service = service,
 				},
 				-- array with one score
 				scores = { tachiScore }
