@@ -66,6 +66,7 @@ t["ScreenEvaluationStage"] = Def.ActorFrame {
 			-- to call this
 
 			local pss = STATSMAN:GetCurStageStats():GetPlayerStageStats(player)
+			local stageStats = STATSMAN:GetCurStageStats()
 
 			local song = GAMESTATE:GetCurrentSong()
 			local songPos = GAMESTATE:GetSongPosition()
@@ -155,6 +156,11 @@ t["ScreenEvaluationStage"] = Def.ActorFrame {
 				scaledLifebar[key] =  newVal
 			end
 
+			if stageStats:GaveUp() and survivedPercent == 100 then
+				scaledLifebar = nil
+				survivedPercent = 0
+			end
+
 			local tachiScore = {
 				scorePercent = scorePercent,
 				survivedPercent = survivedPercent,
@@ -171,7 +177,7 @@ t["ScreenEvaluationStage"] = Def.ActorFrame {
 				meta = {
 					game = "itg",
 					playtype = "Stamina",
-					service = ProductID() .. " v" .. ProductVersion() .. " (tsl v0.1.1)",
+					service = ProductID() .. " v" .. ProductVersion() .. " (tsl v0.1.2)",
 				},
 				-- array with one score
 				scores = { tachiScore }
@@ -200,6 +206,8 @@ t["ScreenEvaluationStage"] = Def.ActorFrame {
 					onResponse = function(response)
 						if response.errorMessage then
 							SM("Failed to submit to Tachi: " .. response.errorMessage)
+						else
+							SM("Score submitted to Tachi!")
 						end
 					end,
 				}
